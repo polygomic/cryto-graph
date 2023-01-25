@@ -1,16 +1,16 @@
 specVersion: 0.0.2
-description: Pancake Profile
+description: CrytoSwap Profile
 repository: https://github.com/pancakeswap
 schema:
   file: ./profile.graphql
 dataSources:
   - kind: ethereum/contract
     name: Profile
-    network: bsc
+    network: mainnet
     source:
-      address: '0xDf4dBf6536201370F95e06A0F8a7a70fE40E388a'
+      address: '0x3C0c9Ec1236253639A31A7FBB9A9816AF1b326f0'
       abi: Profile
-      startBlock: 4570433
+      startBlock: 1
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.4

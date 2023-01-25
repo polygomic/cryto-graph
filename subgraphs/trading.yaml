@@ -1,16 +1,16 @@
 specVersion: 0.0.2
-description: Pancake Trading Competition V1
+description: CrytoSwap Trading Competition V1
 repository: https://github.com/pancakeswap
 schema:
   file: ./trading.graphql
 dataSources:
   - kind: ethereum/contract
     name: TradingCompetitionV1
-    network: bsc
+    network: mainnet
     source:
-      address: '0xd718baa0B1F4f70dcC8458154042120FFE0DEFFA'
+      address: '0x508f6fb7b46D3Fc8B89fE3E9C8344064BEAc06F4'
       abi: TradingCompetitionV1
-      startBlock: 6214239
+      startBlock: 1
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.4
@@ -38,7 +38,7 @@ dataSources:
 templates:
   - kind: ethereum/contract
     name: Pair
-    network: bsc
+    network: mainnet
     source:
       abi: Pair
     mapping:

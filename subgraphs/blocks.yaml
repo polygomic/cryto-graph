@@ -1,14 +1,14 @@
 specVersion: 0.0.2
-description: Binance Smart Chain blocks
+description: Cryto Smart Chain blocks
 repository: https://github.com/pancakeswap
 schema:
   file: ./blocks.graphql
 dataSources:
   - kind: ethereum/contract
     name: ConverterRegistryContract
-    network: bsc
+    network: mainnet
     source:
-      address: '0xCd267d0feb8F71B2a7783a8752C1f76e62dcDcAF'
+      address: '0x07a194E63488AD498a0a89E33aaA5cBf3Efbc143'
       abi: ConverterRegistryContract
     mapping:
       kind: ethereum/events
