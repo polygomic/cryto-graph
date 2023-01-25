@@ -53,7 +53,7 @@ let WHITELISTPAIRS: string[] = [
 ];
 
 let BLACKLISTTOKENS: string[] = [
-  "0xEf6C6dA56fC3509ac291657b2c0D6e5Ce3fFEecD", // Cryto DeFi (CY)
+  "0xef6c6da56fc3509ac291657b2c0d6e5ce3ffeecd", // Cryto DeFi (CY)
 ];
 
 // minimum liquidity for price to get tracked
@@ -67,7 +67,7 @@ export function findCrytoPerToken(token: Token): BigDecimal {
   if (token.id == WCRYTO_ADDRESS) {
     return ONE_BD;
   }
-  if (BLACKLISTTOKENS.includes(token.id)) {
+  if (BLACKLISTTOKENS.includes(token.id.toLowerCase())) {
     return ZERO_BD; // nothing was found return 0
   }
   // loop through whitelist and check if paired with any
