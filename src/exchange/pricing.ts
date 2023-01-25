@@ -52,6 +52,10 @@ let WHITELISTPAIRS: string[] = [
   "0x5Ae3fF5CA49D6Ce400e64B818197F34eB8742828", // CRSWAP-VLAND
 ];
 
+let BLACKLISTTOKENS: string[] = [
+  "0xEf6C6dA56fC3509ac291657b2c0D6e5Ce3fFEecD", // Cryto DeFi (CY)
+];
+
 // minimum liquidity for price to get tracked
 let MINIMUM_LIQUIDITY_THRESHOLD_CRYTO = BigDecimal.fromString("5");
 
@@ -62,6 +66,9 @@ let MINIMUM_LIQUIDITY_THRESHOLD_CRYTO = BigDecimal.fromString("5");
 export function findCrytoPerToken(token: Token): BigDecimal {
   if (token.id == WCRYTO_ADDRESS) {
     return ONE_BD;
+  }
+  if (BLACKLISTTOKENS.includes(token.id)) {
+    return ZERO_BD; // nothing was found return 0
   }
   // loop through whitelist and check if paired with any
   for (let i = 0; i < WHITELIST.length; ++i) {
