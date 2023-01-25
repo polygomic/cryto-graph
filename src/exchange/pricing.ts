@@ -3,32 +3,32 @@ import { BigDecimal, Address } from "@graphprotocol/graph-ts/index";
 import { Pair, Token, Bundle } from "../../generated/schema";
 import { ZERO_BD, factoryContract, ADDRESS_ZERO, ONE_BD } from "./utils";
 
-const WBNB_ADDRESS = "0xbb4cdb9cbd36b01bd1cbaebf2de08d9173bc095c";
-const WBNB_BUSD_PAIR = "0x1b96b92314c44b159149f7e0303511fb2fc4774f"; // created block 589414
-const DAI_WBNB_PAIR = "0xf3010261b58b2874639ca2e860e9005e3be5de0b"; // created block 481116
-const USDT_WBNB_PAIR = "0x20bcc3b8a0091ddac2d0bc30f68e6cbb97de59cd"; // created block 648115
+const WCRYTO_ADDRESS = "0xbb4cdb9cbd36b01bd1cbaebf2de08d9173bc095c";
+const WCRYTO_BUSD_PAIR = "0x1b96b92314c44b159149f7e0303511fb2fc4774f"; // created block 589414
+const DAI_WCRYTO_PAIR = "0xf3010261b58b2874639ca2e860e9005e3be5de0b"; // created block 481116
+const USDT_WCRYTO_PAIR = "0x20bcc3b8a0091ddac2d0bc30f68e6cbb97de59cd"; // created block 648115
 
-export function getBnbPriceInUSD(): BigDecimal {
-  // fetch bnb prices for each stablecoin
-  let usdtPair = Pair.load(USDT_WBNB_PAIR); // usdt is token0
-  let busdPair = Pair.load(WBNB_BUSD_PAIR); // busd is token1
-  let daiPair = Pair.load(DAI_WBNB_PAIR); // dai is token0
+export function getCrytoPriceInUSD(): BigDecimal {
+  // fetch cryto prices for each stablecoin
+  let usdtPair = Pair.load(USDT_WCRYTO_PAIR); // usdt is token0
+  let busdPair = Pair.load(WCRYTO_BUSD_PAIR); // busd is token1
+  let daiPair = Pair.load(DAI_WCRYTO_PAIR); // dai is token0
 
   // all 3 have been created
   if (daiPair !== null && busdPair !== null && usdtPair !== null) {
-    let totalLiquidityBNB = daiPair.reserve1.plus(busdPair.reserve0).plus(usdtPair.reserve1);
-    let daiWeight = daiPair.reserve1.div(totalLiquidityBNB);
-    let busdWeight = busdPair.reserve0.div(totalLiquidityBNB);
-    let usdtWeight = usdtPair.reserve1.div(totalLiquidityBNB);
+    let totalLiquidityCRYTO = daiPair.reserve1.plus(busdPair.reserve0).plus(usdtPair.reserve1);
+    let daiWeight = daiPair.reserve1.div(totalLiquidityCRYTO);
+    let busdWeight = busdPair.reserve0.div(totalLiquidityCRYTO);
+    let usdtWeight = usdtPair.reserve1.div(totalLiquidityCRYTO);
     return daiPair.token0Price
       .times(daiWeight)
       .plus(busdPair.token1Price.times(busdWeight))
       .plus(usdtPair.token0Price.times(usdtWeight));
     // busd and usdt have been created
   } else if (busdPair !== null && usdtPair !== null) {
-    let totalLiquidityBNB = busdPair.reserve0.plus(usdtPair.reserve1);
-    let busdWeight = busdPair.reserve0.div(totalLiquidityBNB);
-    let usdtWeight = usdtPair.reserve1.div(totalLiquidityBNB);
+    let totalLiquidityCRYTO = busdPair.reserve0.plus(usdtPair.reserve1);
+    let busdWeight = busdPair.reserve0.div(totalLiquidityCRYTO);
+    let usdtWeight = usdtPair.reserve1.div(totalLiquidityCRYTO);
     return busdPair.token1Price.times(busdWeight).plus(usdtPair.token0Price.times(usdtWeight));
     // usdt is the only pair so far
   } else if (busdPair !== null) {
@@ -42,7 +42,7 @@ export function getBnbPriceInUSD(): BigDecimal {
 
 // token where amounts should contribute to tracked volume and liquidity
 let WHITELIST: string[] = [
-  "0xbb4cdb9cbd36b01bd1cbaebf2de08d9173bc095c", // WBNB
+  "0xbb4cdb9cbd36b01bd1cbaebf2de08d9173bc095c", // WCRYTO
   "0xe9e7cea3dedca5984780bafc599bd69add087d56", // BUSD
   "0x55d398326f99059ff775485246999027b3197955", // USDT
   "0x8ac76a51cc950d9822d68b83fe1ad97b32cd580d", // USDC
@@ -55,14 +55,14 @@ let WHITELIST: string[] = [
 ];
 
 // minimum liquidity for price to get tracked
-let MINIMUM_LIQUIDITY_THRESHOLD_BNB = BigDecimal.fromString("5");
+let MINIMUM_LIQUIDITY_THRESHOLD_CRYTO = BigDecimal.fromString("5");
 
 /**
- * Search through graph to find derived BNB per token.
- * @todo update to be derived BNB (add stablecoin estimates)
+ * Search through graph to find derived CRYTO per token.
+ * @todo update to be derived CRYTO (add stablecoin estimates)
  **/
-export function findBnbPerToken(token: Token): BigDecimal {
-  if (token.id == WBNB_ADDRESS) {
+export function findCrytoPerToken(token: Token): BigDecimal {
+  if (token.id == WCRYTO_ADDRESS) {
     return ONE_BD;
   }
   // loop through whitelist and check if paired with any
@@ -70,13 +70,13 @@ export function findBnbPerToken(token: Token): BigDecimal {
     let pairAddress = factoryContract.getPair(Address.fromString(token.id), Address.fromString(WHITELIST[i]));
     if (pairAddress.toHexString() != ADDRESS_ZERO) {
       let pair = Pair.load(pairAddress.toHexString());
-      if (pair.token0 == token.id && pair.reserveBNB.gt(MINIMUM_LIQUIDITY_THRESHOLD_BNB)) {
+      if (pair.token0 == token.id && pair.reserveCRYTO.gt(MINIMUM_LIQUIDITY_THRESHOLD_CRYTO)) {
         let token1 = Token.load(pair.token1);
-        return pair.token1Price.times(token1.derivedBNB as BigDecimal); // return token1 per our token * BNB per token 1
+        return pair.token1Price.times(token1.derivedCRYTO as BigDecimal); // return token1 per our token * CRYTO per token 1
       }
-      if (pair.token1 == token.id && pair.reserveBNB.gt(MINIMUM_LIQUIDITY_THRESHOLD_BNB)) {
+      if (pair.token1 == token.id && pair.reserveCRYTO.gt(MINIMUM_LIQUIDITY_THRESHOLD_CRYTO)) {
         let token0 = Token.load(pair.token0);
-        return pair.token0Price.times(token0.derivedBNB as BigDecimal); // return token0 per our token * BNB per token 0
+        return pair.token0Price.times(token0.derivedCRYTO as BigDecimal); // return token0 per our token * CRYTO per token 0
       }
     }
   }
@@ -96,8 +96,8 @@ export function getTrackedVolumeUSD(
   tokenAmount1: BigDecimal,
   token1: Token
 ): BigDecimal {
-  let price0 = token0.derivedBNB.times(bundle.bnbPrice);
-  let price1 = token1.derivedBNB.times(bundle.bnbPrice);
+  let price0 = token0.derivedCRYTO.times(bundle.crytoPrice);
+  let price1 = token1.derivedCRYTO.times(bundle.crytoPrice);
 
   // both are whitelist tokens, take average of both amounts
   if (WHITELIST.includes(token0.id) && WHITELIST.includes(token1.id)) {
@@ -131,8 +131,8 @@ export function getTrackedLiquidityUSD(
   tokenAmount1: BigDecimal,
   token1: Token
 ): BigDecimal {
-  let price0 = token0.derivedBNB.times(bundle.bnbPrice);
-  let price1 = token1.derivedBNB.times(bundle.bnbPrice);
+  let price0 = token0.derivedCRYTO.times(bundle.crytoPrice);
+  let price1 = token1.derivedCRYTO.times(bundle.crytoPrice);
 
   // both are whitelist tokens, take average of both amounts
   if (WHITELIST.includes(token0.id) && WHITELIST.includes(token1.id)) {

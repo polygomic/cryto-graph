@@ -27,40 +27,40 @@ export function handleSwap(event: Swap): void {
   let bundle = Bundle.load("1");
   let team = Team.load(user.team);
 
-  let bnbIN: BigDecimal;
-  let bnbOUT: BigDecimal;
+  let crytoIN: BigDecimal;
+  let crytoOUT: BigDecimal;
 
   if (event.address.equals(Address.fromString(TRACKED_PAIRS[0]))) {
-    bnbIN = event.params.amount0In.toBigDecimal().div(BD_1E18);
-    bnbOUT = event.params.amount0Out.toBigDecimal().div(BD_1E18);
+    crytoIN = event.params.amount0In.toBigDecimal().div(BD_1E18);
+    crytoOUT = event.params.amount0Out.toBigDecimal().div(BD_1E18);
   } else {
-    bnbIN = event.params.amount1In.toBigDecimal().div(BD_1E18);
-    bnbOUT = event.params.amount1Out.toBigDecimal().div(BD_1E18);
+    crytoIN = event.params.amount1In.toBigDecimal().div(BD_1E18);
+    crytoOUT = event.params.amount1Out.toBigDecimal().div(BD_1E18);
   }
 
-  let volumeBNB = bnbOUT.plus(bnbIN);
-  let volumeUSD = volumeBNB.times(bundle.bnbPrice);
+  let volumeCRYTO = crytoOUT.plus(crytoIN);
+  let volumeUSD = volumeCRYTO.times(bundle.crytoPrice);
 
-  log.info("Volume: {} for {} BNB, or {} USD", [
+  log.info("Volume: {} for {} CRYTO, or {} USD", [
     event.transaction.from.toHex(),
-    volumeBNB.toString(),
+    volumeCRYTO.toString(),
     volumeUSD.toString(),
   ]);
 
   user.volumeUSD = user.volumeUSD.plus(volumeUSD);
-  user.volumeBNB = user.volumeBNB.plus(volumeBNB);
+  user.volumeCRYTO = user.volumeCRYTO.plus(volumeCRYTO);
   user.txCount = user.txCount.plus(BI_ONE);
   user.save();
 
   // Team statistics.
   team.volumeUSD = team.volumeUSD.plus(volumeUSD);
-  team.volumeBNB = team.volumeBNB.plus(volumeBNB);
+  team.volumeCRYTO = team.volumeCRYTO.plus(volumeCRYTO);
   team.txCount = team.txCount.plus(BI_ONE);
   team.save();
 
   // Competition statistics.
   competition.volumeUSD = competition.volumeUSD.plus(volumeUSD);
-  competition.volumeBNB = competition.volumeBNB.plus(volumeBNB);
+  competition.volumeCRYTO = competition.volumeCRYTO.plus(volumeCRYTO);
   competition.txCount = competition.txCount.plus(BI_ONE);
   competition.save();
 }

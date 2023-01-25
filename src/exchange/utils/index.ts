@@ -31,7 +31,7 @@ export function convertTokenToDecimal(tokenAmount: BigInt, exchangeDecimals: Big
   return tokenAmount.toBigDecimal().div(exponentToBigDecimal(exchangeDecimals));
 }
 
-export function isNullBnbValue(value: string): boolean {
+export function isNullCrytoValue(value: string): boolean {
   return value == "0x0000000000000000000000000000000000000000000000000000000000000001";
 }
 
@@ -46,7 +46,7 @@ export function fetchTokenSymbol(tokenAddress: Address): string {
     let symbolResultBytes = contractSymbolBytes.try_symbol();
     if (!symbolResultBytes.reverted) {
       // for broken pairs that have no symbol function exposed
-      if (!isNullBnbValue(symbolResultBytes.value.toHexString())) {
+      if (!isNullCrytoValue(symbolResultBytes.value.toHexString())) {
         symbolValue = symbolResultBytes.value.toString();
       }
     }
@@ -68,7 +68,7 @@ export function fetchTokenName(tokenAddress: Address): string {
     let nameResultBytes = contractNameBytes.try_name();
     if (!nameResultBytes.reverted) {
       // for broken exchanges that have no name function exposed
-      if (!isNullBnbValue(nameResultBytes.value.toHexString())) {
+      if (!isNullCrytoValue(nameResultBytes.value.toHexString())) {
         nameValue = nameResultBytes.value.toString();
       }
     }

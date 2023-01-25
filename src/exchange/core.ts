@@ -12,7 +12,7 @@ import {
 } from "../../generated/schema";
 import { Mint, Burn, Swap, Transfer, Sync } from "../../generated/templates/Pair/Pair";
 import { updatePairDayData, updateTokenDayData, updatePancakeDayData, updatePairHourData } from "./dayUpdates";
-import { getBnbPriceInUSD, findBnbPerToken, getTrackedVolumeUSD, getTrackedLiquidityUSD } from "./pricing";
+import { getCrytoPriceInUSD, findCrytoPerToken, getTrackedVolumeUSD, getTrackedLiquidityUSD } from "./pricing";
 import { convertTokenToDecimal, ADDRESS_ZERO, FACTORY_ADDRESS, ONE_BI, ZERO_BD, BI_18 } from "./utils";
 
 function isCompleteMint(mintId: string): boolean {
@@ -77,7 +77,7 @@ export function handleTransfer(event: Transfer): void {
     }
   }
 
-  // case where direct send first on BNB withdrawals
+  // case where direct send first on CRYTO withdrawals
   if (event.params.to.toHexString() == pair.id) {
     let burns = transaction.burns;
     let burn = new BurnEvent(
@@ -177,7 +177,7 @@ export function handleSync(event: Sync): void {
   let pancake = PancakeFactory.load(FACTORY_ADDRESS);
 
   // reset factory liquidity by subtracting onluy tarcked liquidity
-  pancake.totalLiquidityBNB = pancake.totalLiquidityBNB.minus(pair.trackedReserveBNB as BigDecimal);
+  pancake.totalLiquidityCRYTO = pancake.totalLiquidityCRYTO.minus(pair.trackedReserveCRYTO as BigDecimal);
 
   // reset token total liquidity amounts
   token0.totalLiquidity = token0.totalLiquidity.minus(pair.reserve0);
@@ -193,40 +193,40 @@ export function handleSync(event: Sync): void {
 
   pair.save();
 
-  // update BNB price now that reserves could have changed
+  // update CRYTO price now that reserves could have changed
   let bundle = Bundle.load("1");
-  bundle.bnbPrice = getBnbPriceInUSD();
+  bundle.crytoPrice = getCrytoPriceInUSD();
   bundle.save();
 
-  token0.derivedBNB = findBnbPerToken(token0 as Token);
-  token1.derivedBNB = findBnbPerToken(token1 as Token);
+  token0.derivedCRYTO = findCrytoPerToken(token0 as Token);
+  token1.derivedCRYTO = findCrytoPerToken(token1 as Token);
   token0.save();
   token1.save();
 
   // get tracked liquidity - will be 0 if neither is in whitelist
-  let trackedLiquidityBNB: BigDecimal;
-  if (bundle.bnbPrice.notEqual(ZERO_BD)) {
-    trackedLiquidityBNB = getTrackedLiquidityUSD(
+  let trackedLiquidityCRYTO: BigDecimal;
+  if (bundle.crytoPrice.notEqual(ZERO_BD)) {
+    trackedLiquidityCRYTO = getTrackedLiquidityUSD(
       bundle as Bundle,
       pair.reserve0,
       token0 as Token,
       pair.reserve1,
       token1 as Token
-    ).div(bundle.bnbPrice);
+    ).div(bundle.crytoPrice);
   } else {
-    trackedLiquidityBNB = ZERO_BD;
+    trackedLiquidityCRYTO = ZERO_BD;
   }
 
   // use derived amounts within pair
-  pair.trackedReserveBNB = trackedLiquidityBNB;
-  pair.reserveBNB = pair.reserve0
-    .times(token0.derivedBNB as BigDecimal)
-    .plus(pair.reserve1.times(token1.derivedBNB as BigDecimal));
-  pair.reserveUSD = pair.reserveBNB.times(bundle.bnbPrice);
+  pair.trackedReserveCRYTO = trackedLiquidityCRYTO;
+  pair.reserveCRYTO = pair.reserve0
+    .times(token0.derivedCRYTO as BigDecimal)
+    .plus(pair.reserve1.times(token1.derivedCRYTO as BigDecimal));
+  pair.reserveUSD = pair.reserveCRYTO.times(bundle.crytoPrice);
 
   // use tracked amounts globally
-  pancake.totalLiquidityBNB = pancake.totalLiquidityBNB.plus(trackedLiquidityBNB);
-  pancake.totalLiquidityUSD = pancake.totalLiquidityBNB.times(bundle.bnbPrice);
+  pancake.totalLiquidityCRYTO = pancake.totalLiquidityCRYTO.plus(trackedLiquidityCRYTO);
+  pancake.totalLiquidityUSD = pancake.totalLiquidityCRYTO.times(bundle.crytoPrice);
 
   // now correctly set liquidity amounts for each token
   token0.totalLiquidity = token0.totalLiquidity.plus(pair.reserve0);
@@ -258,12 +258,12 @@ export function handleMint(event: Mint): void {
   token0.txCount = token0.txCount.plus(ONE_BI);
   token1.txCount = token1.txCount.plus(ONE_BI);
 
-  // get new amounts of USD and BNB for tracking
+  // get new amounts of USD and CRYTO for tracking
   let bundle = Bundle.load("1");
-  let amountTotalUSD = token1.derivedBNB
+  let amountTotalUSD = token1.derivedCRYTO
     .times(token1Amount)
-    .plus(token0.derivedBNB.times(token0Amount))
-    .times(bundle.bnbPrice);
+    .plus(token0.derivedCRYTO.times(token0Amount))
+    .times(bundle.crytoPrice);
 
   // update txn counts
   pair.txCount = pair.txCount.plus(ONE_BI);
@@ -314,12 +314,12 @@ export function handleBurn(event: Burn): void {
   token0.txCount = token0.txCount.plus(ONE_BI);
   token1.txCount = token1.txCount.plus(ONE_BI);
 
-  // get new amounts of USD and BNB for tracking
+  // get new amounts of USD and CRYTO for tracking
   let bundle = Bundle.load("1");
-  let amountTotalUSD = token1.derivedBNB
+  let amountTotalUSD = token1.derivedCRYTO
     .times(token1Amount)
-    .plus(token0.derivedBNB.times(token0Amount))
-    .times(bundle.bnbPrice);
+    .plus(token0.derivedCRYTO.times(token0Amount))
+    .times(bundle.crytoPrice);
 
   // update txn counts
   pancake.txCount = pancake.txCount.plus(ONE_BI);
@@ -361,15 +361,15 @@ export function handleSwap(event: Swap): void {
   let amount0Total = amount0Out.plus(amount0In);
   let amount1Total = amount1Out.plus(amount1In);
 
-  // BNB/USD prices
+  // CRYTO/USD prices
   let bundle = Bundle.load("1");
 
-  // get total amounts of derived USD and BNB for tracking
-  let derivedAmountBNB = token1.derivedBNB
+  // get total amounts of derived USD and CRYTO for tracking
+  let derivedAmountCRYTO = token1.derivedCRYTO
     .times(amount1Total)
-    .plus(token0.derivedBNB.times(amount0Total))
+    .plus(token0.derivedCRYTO.times(amount0Total))
     .div(BigDecimal.fromString("2"));
-  let derivedAmountUSD = derivedAmountBNB.times(bundle.bnbPrice);
+  let derivedAmountUSD = derivedAmountCRYTO.times(bundle.crytoPrice);
 
   // only accounts for volume through white listed tokens
   let trackedAmountUSD = getTrackedVolumeUSD(
@@ -380,11 +380,11 @@ export function handleSwap(event: Swap): void {
     token1 as Token
   );
 
-  let trackedAmountBNB: BigDecimal;
-  if (bundle.bnbPrice.equals(ZERO_BD)) {
-    trackedAmountBNB = ZERO_BD;
+  let trackedAmountCRYTO: BigDecimal;
+  if (bundle.crytoPrice.equals(ZERO_BD)) {
+    trackedAmountCRYTO = ZERO_BD;
   } else {
-    trackedAmountBNB = trackedAmountUSD.div(bundle.bnbPrice);
+    trackedAmountCRYTO = trackedAmountUSD.div(bundle.crytoPrice);
   }
 
   // update token0 global volume and token liquidity stats
@@ -412,7 +412,7 @@ export function handleSwap(event: Swap): void {
   // update global values, only used tracked amounts for volume
   let pancake = PancakeFactory.load(FACTORY_ADDRESS);
   pancake.totalVolumeUSD = pancake.totalVolumeUSD.plus(trackedAmountUSD);
-  pancake.totalVolumeBNB = pancake.totalVolumeBNB.plus(trackedAmountBNB);
+  pancake.totalVolumeCRYTO = pancake.totalVolumeCRYTO.plus(trackedAmountCRYTO);
   pancake.untrackedVolumeUSD = pancake.untrackedVolumeUSD.plus(derivedAmountUSD);
   pancake.txCount = pancake.txCount.plus(ONE_BI);
 
@@ -470,7 +470,7 @@ export function handleSwap(event: Swap): void {
 
   // swap specific updating
   pancakeDayData.dailyVolumeUSD = pancakeDayData.dailyVolumeUSD.plus(trackedAmountUSD);
-  pancakeDayData.dailyVolumeBNB = pancakeDayData.dailyVolumeBNB.plus(trackedAmountBNB);
+  pancakeDayData.dailyVolumeCRYTO = pancakeDayData.dailyVolumeCRYTO.plus(trackedAmountCRYTO);
   pancakeDayData.dailyVolumeUntracked = pancakeDayData.dailyVolumeUntracked.plus(derivedAmountUSD);
   pancakeDayData.save();
 
@@ -488,17 +488,17 @@ export function handleSwap(event: Swap): void {
 
   // swap specific updating for token0
   token0DayData.dailyVolumeToken = token0DayData.dailyVolumeToken.plus(amount0Total);
-  token0DayData.dailyVolumeBNB = token0DayData.dailyVolumeBNB.plus(amount0Total.times(token1.derivedBNB as BigDecimal));
+  token0DayData.dailyVolumeCRYTO = token0DayData.dailyVolumeCRYTO.plus(amount0Total.times(token1.derivedCRYTO as BigDecimal));
   token0DayData.dailyVolumeUSD = token0DayData.dailyVolumeUSD.plus(
-    amount0Total.times(token0.derivedBNB as BigDecimal).times(bundle.bnbPrice)
+    amount0Total.times(token0.derivedCRYTO as BigDecimal).times(bundle.crytoPrice)
   );
   token0DayData.save();
 
   // swap specific updating
   token1DayData.dailyVolumeToken = token1DayData.dailyVolumeToken.plus(amount1Total);
-  token1DayData.dailyVolumeBNB = token1DayData.dailyVolumeBNB.plus(amount1Total.times(token1.derivedBNB as BigDecimal));
+  token1DayData.dailyVolumeCRYTO = token1DayData.dailyVolumeCRYTO.plus(amount1Total.times(token1.derivedCRYTO as BigDecimal));
   token1DayData.dailyVolumeUSD = token1DayData.dailyVolumeUSD.plus(
-    amount1Total.times(token1.derivedBNB as BigDecimal).times(bundle.bnbPrice)
+    amount1Total.times(token1.derivedCRYTO as BigDecimal).times(bundle.crytoPrice)
   );
   token1DayData.save();
 }

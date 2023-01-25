@@ -14,14 +14,14 @@ export function updatePancakeDayData(event: ethereum.Event): PancakeDayData {
     pancakeDayData = new PancakeDayData(dayID.toString());
     pancakeDayData.date = dayStartTimestamp;
     pancakeDayData.dailyVolumeUSD = ZERO_BD;
-    pancakeDayData.dailyVolumeBNB = ZERO_BD;
+    pancakeDayData.dailyVolumeCRYTO = ZERO_BD;
     pancakeDayData.totalVolumeUSD = ZERO_BD;
-    pancakeDayData.totalVolumeBNB = ZERO_BD;
+    pancakeDayData.totalVolumeCRYTO = ZERO_BD;
     pancakeDayData.dailyVolumeUntracked = ZERO_BD;
   }
 
   pancakeDayData.totalLiquidityUSD = pancake.totalLiquidityUSD;
-  pancakeDayData.totalLiquidityBNB = pancake.totalLiquidityBNB;
+  pancakeDayData.totalLiquidityCRYTO = pancake.totalLiquidityCRYTO;
   pancakeDayData.txCount = pancake.txCount;
   pancakeDayData.save();
 
@@ -96,17 +96,17 @@ export function updateTokenDayData(token: Token, event: ethereum.Event): TokenDa
     tokenDayData = new TokenDayData(tokenDayID);
     tokenDayData.date = dayStartTimestamp;
     tokenDayData.token = token.id;
-    tokenDayData.priceUSD = token.derivedBNB.times(bundle.bnbPrice);
+    tokenDayData.priceUSD = token.derivedCRYTO.times(bundle.crytoPrice);
     tokenDayData.dailyVolumeToken = ZERO_BD;
-    tokenDayData.dailyVolumeBNB = ZERO_BD;
+    tokenDayData.dailyVolumeCRYTO = ZERO_BD;
     tokenDayData.dailyVolumeUSD = ZERO_BD;
     tokenDayData.dailyTxns = ZERO_BI;
     tokenDayData.totalLiquidityUSD = ZERO_BD;
   }
-  tokenDayData.priceUSD = token.derivedBNB.times(bundle.bnbPrice);
+  tokenDayData.priceUSD = token.derivedCRYTO.times(bundle.crytoPrice);
   tokenDayData.totalLiquidityToken = token.totalLiquidity;
-  tokenDayData.totalLiquidityBNB = token.totalLiquidity.times(token.derivedBNB as BigDecimal);
-  tokenDayData.totalLiquidityUSD = tokenDayData.totalLiquidityBNB.times(bundle.bnbPrice);
+  tokenDayData.totalLiquidityCRYTO = token.totalLiquidity.times(token.derivedCRYTO as BigDecimal);
+  tokenDayData.totalLiquidityUSD = tokenDayData.totalLiquidityCRYTO.times(bundle.crytoPrice);
   tokenDayData.dailyTxns = tokenDayData.dailyTxns.plus(ONE_BI);
   tokenDayData.save();
 
