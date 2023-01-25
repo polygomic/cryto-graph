@@ -74,7 +74,7 @@ export function findCrytoPerToken(token: Token): BigDecimal {
   }
   // loop through whitelist and check if paired with any
   for (let i = 0; i < WHITELIST.length; ++i) {
-    let pairAddress = factoryContract.getPair(Address.fromString(token.id), Address.fromString(WHITELIST[i]));
+    let pairAddress = factoryContract.try_getPair(Address.fromString(token.id), Address.fromString(WHITELIST[i]));
     if (pairAddress.toHexString() != ADDRESS_ZERO) {
       if (WHITELISTPAIRS.includes(pairAddress.toHexString())) {
         let pair = Pair.load(pairAddress.toHexString());
