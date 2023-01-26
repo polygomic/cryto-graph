@@ -8,7 +8,7 @@ const WCRYTO_CRUSD_PAIR = "0x912C1943C1FEE223F37eCaF03BE87f1aBD8dEdB0"; // creat
 
 export function getCrytoPriceInUSD(): BigDecimal {
   // fetch cryto prices for each stablecoin
-  let crusdPair = Pair.load(WCRYTO_CRUSD_PAIR); // busd is token1
+  let crusdPair = Pair.load(WCRYTO_CRUSD_PAIR); // busd is token0
 
   // all 3 have been created
   if (crusdPair !== null) {
@@ -22,48 +22,6 @@ export function getCrytoPriceInUSD(): BigDecimal {
 let WHITELIST: string[] = [
   "0x791b800dec21f46402b03dc5E70DFC36415F9865", // WCRYTO
   "0x492ffa18b9D3830Ebc5D59D5855219C591756234", // CRUSD
-  "0xbAAeB48E51d2B8cd75914FA0d4B3cf6f06Ca9a5b", // CRYTOSW
-  "0xEf6C6dA56fC3509ac291657b2c0D6e5Ce3fFEecD", // Cryto DeFi
-  "0x0aa77720aC794BDfF48C2EA7E57D21E9293a9a0A", // Cryto Finance
-  "0x3d7d86Ea3c6713BC5AdDe740A7bfa28160004982", // GAMING
-  "0x8807204AaD2F54088819e788Bb8A23D22B60DBc8", // META+
-  "0xd145e7364Bdc8055adC21891ed605365eda4e871", // W3
-  "0x3e7543cb79045b12086Aa8dFB197F6DDC411C46B", // IMAGE
-  "0xd9d1A894D821B1dA2F49fBea5b3311F460A1815A", // PROFIT
-  "0x98699e7f08694F482359b829a31c367C7A531A00", // NFT
-  "0xC640B9A7f9d06Ac0D111afeCeF9F7E0425aBc6D3", // DANC
-  "0x03BFB8121e78575b88D9b0e573A88f0AEcb5243E"  // VLAND
-];
-
-let WHITELISTPAIRS: string[] = [
-  "0x19753ed08E38710A262e78853C2CEBE2A7B29AEA", // WCRYTO-CRSWAP
-  "0x912C1943C1FEE223F37eCaF03BE87f1aBD8dEdB0", // WCRYTO-CRUSD
-  "0x64fF46B71dDF5B900eF59baa9D55B1BC519f780B", // WCRYTO-NFT
-  "0x5C2a3279474b532a7610D8e4Bd5982a651bc3D90", // WCRYTO-IMAGE
-  "0xFAEb4B29aA9E154111A9E8D11f35781F3D2F6A4c", // WCRYTO-META+
-  "0x9DF4c060860d0aC73F75C13d02144e0d62F3314F", // WCRYTO-WEB
-  "0xf0490CEC064e873ED936ECc7fE76B78FAa29a63e", // WCRYTO-PROFIT
-  "0x6bF7cDA2f7C068e1a24A44512Be5EA78035061e3", // WCRYTO-DANCO
-  "0x546dE91a85103eef220cac3B3F8c8599D1a9a36F", // WCRYTO-VLAND
-  "0x332545cBce9Ce7138Be286a44dcC187f811D02a0", // NFT-CRUSD
-  "0x7827Acdd11AD671575274c2330d2c03bb6e69450", // IMAGE-CRUSD
-  "0xa2cb0e86986B913658BCdA3A89013e44476dc0Dd", // META+-CRUSD
-  "0xaA691FBED27d847C3Bd9d2cd5204114dB8a5A4cA", // WEB-CRUSD
-  "0x9c78E20A8C7AD3D8EDB42a0D47F6a6E267173326", // PROFIT-CRUSD
-  "0x340ae9ED2E19E4B47c33dBCD3c0EAd6ca848a88e", // DANCO-CRUSD
-  "0x94E04a9e5DA833cfD4b2879FCb6709B13aA770C9", // CRSWAP-CRUSD
-  "0xe7cBa581393BcD33223131fa2D8E5B80df008afa", // VLAND-CRUSD
-  "0x03d821A2aeBdB418C5AaF5413FC1a80182363133", // CRSWAP-NFT
-  "0xa579845589E2Cd1111E4E3712341464ef4c9647C", // CRSWAP-IMAGE
-  "0x6D1625b653B404Eb7DbF73E59B388C88c7B2b982", // CRSWAP-META+
-  "0x4a173213f22eC15B3E27a234249f20D26aA3EBba", // CRSWAP-WEB
-  "0xce045A12FF2eC37188C5cAE5fe0d613aa5437dC8", // CRSWAP-PROFIT
-  "0x69Db8D1af1F367e75Ae31a6A783C4E273B6DFB75", // CRSWAP-DANCO
-  "0x5Ae3fF5CA49D6Ce400e64B818197F34eB8742828", // CRSWAP-VLAND
-];
-
-let BLACKLISTTOKENS: string[] = [
-  "0xef6c6da56fc3509ac291657b2c0d6e5ce3ffeecd", // Cryto DeFi (CY)
 ];
 
 // minimum liquidity for price to get tracked
@@ -81,16 +39,14 @@ export function findCrytoPerToken(token: Token): BigDecimal {
   for (let i = 0; i < WHITELIST.length; ++i) {
     let pairAddress = factoryContract.getPair(Address.fromString(token.id), Address.fromString(WHITELIST[i]));
     if (pairAddress.toHexString() != ADDRESS_ZERO) {
-      if (WHITELISTPAIRS.includes(pairAddress.toHexString())) {
-        let pair = Pair.load(pairAddress.toHexString());
-        if (pair.token0 == token.id && pair.reserveCRYTO.gt(MINIMUM_LIQUIDITY_THRESHOLD_CRYTO)) {
-          let token1 = Token.load(pair.token1);
-          return pair.token1Price.times(token1.derivedCRYTO as BigDecimal); // return token1 per our token * CRYTO per token 1
-        }
-        if (pair.token1 == token.id && pair.reserveCRYTO.gt(MINIMUM_LIQUIDITY_THRESHOLD_CRYTO)) {
-          let token0 = Token.load(pair.token0);
-          return pair.token0Price.times(token0.derivedCRYTO as BigDecimal); // return token0 per our token * CRYTO per token 0
-        }
+      let pair = Pair.load(pairAddress.toHexString());
+      if (pair.token0 == token.id && pair.reserveCRYTO.gt(MINIMUM_LIQUIDITY_THRESHOLD_CRYTO)) {
+        let token1 = Token.load(pair.token1);
+        return pair.token1Price.times(token1.derivedCRYTO as BigDecimal); // return token1 per our token * CRYTO per token 1
+      }
+      if (pair.token1 == token.id && pair.reserveCRYTO.gt(MINIMUM_LIQUIDITY_THRESHOLD_CRYTO)) {
+        let token0 = Token.load(pair.token0);
+        return pair.token0Price.times(token0.derivedCRYTO as BigDecimal); // return token0 per our token * CRYTO per token 0
       }
     }
   }
