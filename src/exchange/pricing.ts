@@ -11,7 +11,11 @@ export function getCrytoPriceInUSD(): BigDecimal {
   let crusdPair = Pair.load(WCRYTO_CRUSD_PAIR); // crusd is token0
 
   // all 3 have been created
-  return crusdPair.token1Price;
+  if (crusdPair !== null) {
+    return crusdPair.token1Price;
+  } else {
+    return BigDecimal.fromString("0.001");
+  }
 }
 
 // token where amounts should contribute to tracked volume and liquidity
