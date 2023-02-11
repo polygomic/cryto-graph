@@ -12,9 +12,9 @@ export function getCrytoPriceInUSD(): BigDecimal {
 
   // all 3 have been created
   if (crusdPair !== null) {
-    return crusdPair.token0Price;
+    return crusdPair.token1Price;
   } else {
-    return ZERO_BD;
+    return ONE_BD;
   }
 }
 
