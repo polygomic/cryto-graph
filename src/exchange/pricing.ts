@@ -8,11 +8,11 @@ const WCRYTO_CRUSD_PAIR = "0x912C1943C1FEE223F37eCaF03BE87f1aBD8dEdB0"; // creat
 
 export function getCrytoPriceInUSD(): BigDecimal {
   // fetch cryto prices for each stablecoin
-  let crusdPair = Pair.load(WCRYTO_CRUSD_PAIR); // busd is token0
+  let crusdPair = Pair.load(WCRYTO_CRUSD_PAIR); // crusd is token0
 
   // all 3 have been created
   if (crusdPair !== null) {
-    return crusdPair.token0Price;
+    return crusdPair.token1Price;
   } else {
     return ZERO_BD;
   }
@@ -22,6 +22,8 @@ export function getCrytoPriceInUSD(): BigDecimal {
 let WHITELIST: string[] = [
   "0x791b800dec21f46402b03dc5E70DFC36415F9865", // WCRYTO
   "0x492ffa18b9D3830Ebc5D59D5855219C591756234", // CRUSD
+  "0xbAAeB48E51d2B8cd75914FA0d4B3cf6f06Ca9a5b", // CYTOSW
+  "0xc9DBB5EC38BbB50dAca275e54CB9659d46634b5e", // STOCK
 ];
 
 // minimum liquidity for price to get tracked
