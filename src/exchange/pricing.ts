@@ -4,7 +4,7 @@ import { Pair, Token, Bundle } from "../../generated/schema";
 import { ZERO_BD, factoryContract, ADDRESS_ZERO, ONE_BD } from "./utils";
 
 const WCRYTO_ADDRESS = "0x791b800dec21f46402b03dc5E70DFC36415F9865";
-const WCRYTO_CRUSD_PAIR = "0x912C1943C1FEE223F37eCaF03BE87f1aBD8dEdB0"; // created block 636298
+const WCRYTO_CRUSD_PAIR = "0x912c1943c1fee223f37ecaf03be87f1abd8dedb0"; // created block 636298
 
 export function getCrytoPriceInUSD(): BigDecimal {
   // fetch cryto prices for each stablecoin
@@ -12,9 +12,9 @@ export function getCrytoPriceInUSD(): BigDecimal {
 
   // all 3 have been created
   if (crusdPair !== null) {
-    return crusdPair.token1Price;
+    return crusdPair.token0Price;
   } else {
-    return BigDecimal.fromString("0.001");
+    return BigDecimal.fromString("0.1");
   }
 }
 
@@ -27,7 +27,7 @@ let WHITELIST: string[] = [
 ];
 
 // minimum liquidity for price to get tracked
-let MINIMUM_LIQUIDITY_THRESHOLD_CRYTO = BigDecimal.fromString("5");
+let MINIMUM_LIQUIDITY_THRESHOLD_CRYTO = BigDecimal.fromString("0.0000000001");
 
 /**
  * Search through graph to find derived CRYTO per token.
@@ -39,7 +39,7 @@ export function findCrytoPerToken(token: Token): BigDecimal {
   }
   // loop through whitelist and check if paired with any
   for (let i = 0; i < WHITELIST.length; ++i) {
-    let pairAddress = factoryContract.getPair(Address.fromString(WHITELIST[i]), Address.fromString(token.id));
+    let pairAddress = factoryContract.getPair(Address.fromString(token.id), Address.fromString(WHITELIST[i]));
     if (pairAddress.toHexString() != ADDRESS_ZERO) {
       let pair = Pair.load(pairAddress.toHexString());
       if (pair.token0 == token.id && pair.reserveCRYTO.gt(MINIMUM_LIQUIDITY_THRESHOLD_CRYTO)) {
